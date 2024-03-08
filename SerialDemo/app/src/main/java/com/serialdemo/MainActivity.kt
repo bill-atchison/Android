@@ -6,11 +6,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.telephony.TelephonyManager
+import android.view.Gravity
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     private val requestState = 100
@@ -58,5 +64,53 @@ class MainActivity : AppCompatActivity() {
                 checkedPermission = PackageManager.PERMISSION_GRANTED
             }
         }
+    }
+
+    fun createSampleFile(view: View) {
+        val outputFilename = "my_sample_file.txt"
+
+        var file = File(
+            Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOCUMENTS
+            ), "$outputFilename"
+        )
+        val outputStream = FileOutputStream(file)
+
+        outputStream.use {
+            fileOut -> fileOut.write("This is a sample file".toByteArray())
+            fileOut.flush()
+            fileOut.close()
+        }
+
+        val toast = Toast.makeText(applicationContext,"Sample File Has Been Created",Toast.LENGTH_SHORT)
+            toast.setGravity(Gravity.CENTER, 0, 0)
+            toast.show()
+    }
+
+    fun readStatsFile(view: View) {
+        val inputFilename = "MxStats.txt"
+        //val inputFilename = "my_sample_file.txt"
+
+        var file = File(
+            Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOCUMENTS
+            ), "$inputFilename"
+        )
+
+        val dBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        val stringBuilder = StringBuilder()
+        dBuilder.setTitle("Device Info")
+        var text = ""
+
+        try {
+            val inputStream = FileInputStream(file)
+            text = inputStream.readBytes().toString(Charsets.UTF_8)
+            stringBuilder.append(text)
+            dBuilder.setMessage(text)
+        } catch (e: Exception) {
+            dBuilder.setMessage(e.message)
+        }
+
+        dBuilder.show()
     }
 }

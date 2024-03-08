@@ -21,11 +21,30 @@
         android:layout_below="@id/button"
         android:layout_centerInParent="true"
         android:layout_marginTop="16sp" />
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/btnReadFile"
         android:layout_centerInParent="true"
         android:onClick="showDeviceInfo"
         android:text="Get Serial Number" />
+
+    <Button
+        android:id="@+id/btnWriteFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:onClick="createSampleFile"
+        android:text="Create Sample File" />
+
+    <Button
+        android:id="@+id/btnReadFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnWriteFile"
+        android:layout_centerInParent="true"
+        android:onClick="readStatsFile"
+        android:text="Read MxStats.xml File" />
 </RelativeLayout>
