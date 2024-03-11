@@ -2,13 +2,16 @@ package com.serialdemo
 
 import android.Manifest
 import android.app.AlertDialog
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.telephony.TelephonyManager
-import android.view.Gravity
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -67,46 +70,59 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun createSampleFile(view: View) {
-        val outputFilename = "my_sample_file.txt"
+        val dBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        dBuilder.setTitle("Device Info")
 
-        var file = File(
-            Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS
-            ), "$outputFilename"
-        )
-        val outputStream = FileOutputStream(file)
+        val resolver = this.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "my_sample_file")
+            put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Documents")
+        }
+        val uri: Uri? = resolver.insert(MediaStore.Files.getContentUri("external"), contentValues)
 
-        outputStream.use {
-            fileOut -> fileOut.write("This is a sample file".toByteArray())
-            fileOut.flush()
-            fileOut.close()
+        //dBuilder.setMessage("$uri")
+        //dBuilder.show()
+
+        try {
+            if (uri != null) {
+                resolver.openOutputStream(uri).use {
+                    // TODO something with the stream
+                    it?.write("This is a sample File.".toByteArray())
+                    it?.close()
+                    dBuilder.setMessage("Sample File Has Been Created")
+                }
+            }
+        } catch (e: Exception) {
+            dBuilder.setMessage(e.message)
         }
 
-        val toast = Toast.makeText(applicationContext,"Sample File Has Been Created",Toast.LENGTH_SHORT)
-            toast.setGravity(Gravity.CENTER, 0, 0)
-            toast.show()
+        dBuilder.show()
     }
 
     fun readStatsFile(view: View) {
-        val inputFilename = "MxStats.txt"
-        //val inputFilename = "my_sample_file.txt"
-
-        var file = File(
-            Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS
-            ), "$inputFilename"
-        )
-
         val dBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        val stringBuilder = StringBuilder()
         dBuilder.setTitle("Device Info")
         var text = ""
 
+        val resolver = this.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "my_sample_file.txt")
+            put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS)
+        }
+        val uri: Uri? = resolver.insert(MediaStore.Files.getContentUri("external"), contentValues)
+
+        //dBuilder.setMessage("$uri")
+        //dBuilder.show()
+
         try {
-            val inputStream = FileInputStream(file)
-            text = inputStream.readBytes().toString(Charsets.UTF_8)
-            stringBuilder.append(text)
-            dBuilder.setMessage(text)
+            if (uri != null) {
+                resolver.openInputStream(uri).use {
+                    // TODO something with the stream
+                    text = (it?.readBytes()?.toString(Charsets.UTF_8) ?: dBuilder.setMessage(text)) as String
+                }
+            }
         } catch (e: Exception) {
             dBuilder.setMessage(e.message)
         }
